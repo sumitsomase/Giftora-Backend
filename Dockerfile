@@ -1,11 +1,14 @@
-# Step 1: Use an official Java runtime as a parent image
-FROM openjdk:17-jdk-slim
-
-# Step 2: Set the working directory in the container
+# Step 1: Use Maven image to build the app
+FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -DskipTests
 
-# Step 3: Copy the JAR file from the target folder to the container
-COPY target/*.jar app.jar
+# Step 2: Use a lightweight JDK to run the app
+FROM eclipse-temurin:17-jdk-alpine
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
 
-# Step 4: Run the JAR file
+# Step 3: Run the jar
 ENTRYPOINT ["java", "-jar", "app.jar"]
