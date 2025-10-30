@@ -28,7 +28,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors().and() // ✅ Enable CORS support
+            .cors().and() // ✅ Enable CORS
             .csrf(csrf -> csrf.disable())
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
@@ -36,10 +36,10 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             );
 
-        // Allow H2 console frames (optional)
+        // ✅ Allow H2 console frames (optional)
         http.headers(headers -> headers.frameOptions(frame -> frame.disable()));
 
-        // Add JWT filter before username/password filter
+        // ✅ Add JWT filter before UsernamePasswordAuthenticationFilter
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -55,11 +55,14 @@ public class SecurityConfig {
         return authConfig.getAuthenticationManager();
     }
 
-    // ✅ Add this to handle CORS for React frontend
+    // ✅ CORS Configuration for both localhost and Vercel frontend
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000")); // Frontend URL
+        configuration.setAllowedOrigins(List.of(
+                "https://giftora-frontend.vercel.app", // Production (Vercel)
+                "http://localhost:3000"                // Development (local)
+        ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
